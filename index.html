@@ -158,8 +158,10 @@
   .iconbtn.active{background:var(--volt);border-color:var(--volt);color:#0c0d0e;}
   .editbar{background:var(--surface2);border:1px dashed var(--volt-dim);border-radius:11px;padding:10px 13px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--volt);}
   .editbar svg{flex-shrink:0;width:16px;height:16px;stroke:var(--volt);}
-  .cardedit{display:flex;gap:6px;flex-shrink:0;}
-  .ceditbtn{width:30px;height:30px;border-radius:8px;background:var(--bg2);border:1px solid var(--line2);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s;}
+  .cardedit{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:92px;}
+  .ceditbtn{width:28px;height:28px;border-radius:7px;background:var(--bg2);border:1px solid var(--line2);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s;}
+  .ceditbtn:disabled{opacity:.3;cursor:default;}
+  .ceditbtn:disabled:hover{color:var(--muted);border-color:var(--line2);}
   .ceditbtn:hover{color:var(--volt);border-color:var(--volt-dim);}
   .ceditbtn.danger:hover{color:var(--danger);border-color:var(--danger);}
   .renamerow{display:flex;gap:8px;margin-top:11px;}
@@ -358,7 +360,7 @@ const PROGRAM = {
 const STORE_KEY = "ironlog-rw-v2";
 const LS_KEY = "ironlog-rw-v2-local";
 let storageMode = "none"; // "claude" | "local" | "memory"
-let state = { view:{ week:1, day:"bisback" }, log:{}, customItems:{}, removedItems:{} };
+let state = { view:{ week:1, day:"bisback" }, log:{}, customItems:{}, removedItems:{}, order:{} };
 function exKey(dayId, gi, name){ return dayId+"|"+gi+"|"+name; }
 function groupKey(dayId, gi){ return dayId+"|"+gi; }
 
@@ -388,6 +390,7 @@ function mergeState(parsed){
   if(!state.view) state.view={week:1,day:"bisback"};
   if(!state.customItems) state.customItems={};
   if(!state.removedItems) state.removedItems={};
+  if(!state.order) state.order={};
 }
 let saveTimer=null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,350); }
@@ -407,7 +410,29 @@ function liveGroupItems(day, gi, group){
   const removed = state.removedItems[gk] || [];
   const base = group.items.filter(ex => !removed.includes(ex.name));
   const custom = (state.customItems[gk] || []);
-  return base.concat(custom);
+  let items = base.concat(custom);
+
+  const order = state.order[gk];
+  if(order && order.length){
+    const byName = {}; items.forEach(ex=>{ byName[ex.name]=ex; });
+    const ordered = [];
+    order.forEach(name=>{ if(byName[name]){ ordered.push(byName[name]); delete byName[name]; } });
+    // any items not yet in the saved order (newly added) go at the end, in their natural order
+    items.forEach(ex=>{ if(byName[ex.name]){ ordered.push(ex); delete byName[ex.name]; } });
+    items = ordered;
+  }
+  return items;
+}
+function moveItem(day, gi, group, name, dir){
+  const gk=groupKey(day.id,gi);
+  const items = liveGroupItems(day,gi,group);
+  const names = items.map(ex=>ex.name);
+  const idx = names.indexOf(name);
+  const swapIdx = idx + dir;
+  if(idx<0 || swapIdx<0 || swapIdx>=names.length) return;
+  [names[idx], names[swapIdx]] = [names[swapIdx], names[idx]];
+  state.order[gk] = names;
+  scheduleSave();
 }
 function addCustomItem(day, gi, group, name){
   name=name.trim();
@@ -436,6 +461,7 @@ function removeItem(day, gi, group, ex){
     state.removedItems[gk] = state.removedItems[gk] || [];
     if(!state.removedItems[gk].includes(ex.name)) state.removedItems[gk].push(ex.name);
   }
+  if(state.order[gk]) state.order[gk]=state.order[gk].filter(n=>n!==ex.name);
   scheduleSave();
 }
 function renameItem(day, gi, group, ex, newName){
@@ -451,6 +477,11 @@ function renameItem(day, gi, group, ex, newName){
     if(!state.removedItems[gk].includes(ex.name)) state.removedItems[gk].push(ex.name);
     state.customItems[gk]=state.customItems[gk]||[];
     state.customItems[gk].push({ name:newName, type:ex.type, target:ex.target, timer:ex.timer, custom:true, subFor:ex.name });
+  }
+  // carry the position over to the new name so substitutions don't jump to the bottom
+  if(state.order[gk]){
+    const i=state.order[gk].indexOf(ex.name);
+    if(i>=0) state.order[gk][i]=newName; else state.order[gk].push(newName);
   }
   scheduleSave();
   return true;
@@ -525,7 +556,7 @@ function renderDays(){
   });
 }
 
-function exerciseCard(day, gi, group, ex){
+function exerciseCard(day, gi, group, ex, idx, total){
   const en=entry(state.view.week, day.id, gi, ex.name);
   const card=document.createElement("div");
   const acc = group.band?" band":(group.cardio?" cardio":"");
@@ -581,6 +612,8 @@ function exerciseCard(day, gi, group, ex){
 
   card.className="card"+acc+(en.done?" done":"");
   const editCtrls = editMode ? `<div class="cardedit">
+      <button class="ceditbtn" data-act="up" title="Move up" ${idx===0?"disabled":""}><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      <button class="ceditbtn" data-act="down" title="Move down" ${idx===total-1?"disabled":""}><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
       <button class="ceditbtn" data-act="rename" title="Rename / substitute"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
       <button class="ceditbtn danger" data-act="remove" title="Remove"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
     </div>` : "";
@@ -636,8 +669,16 @@ function exerciseCard(day, gi, group, ex){
   if(tc) tc.addEventListener("click",()=>openTimer(parseInt(tc.getAttribute("data-t"),10)));
 
   // edit-mode controls
+  const upBtn=card.querySelector('[data-act="up"]');
+  const downBtn=card.querySelector('[data-act="down"]');
   const renameBtn=card.querySelector('[data-act="rename"]');
   const removeBtn=card.querySelector('[data-act="remove"]');
+  if(upBtn) upBtn.addEventListener("click",()=>{
+    moveItem(day,gi,group,ex.name,-1); renderPanel();
+  });
+  if(downBtn) downBtn.addEventListener("click",()=>{
+    moveItem(day,gi,group,ex.name,1); renderPanel();
+  });
   const renameRow=card.querySelector(".renamerow");
   const renameInput=renameRow.querySelector("input");
   if(renameBtn) renameBtn.addEventListener("click",()=>{
@@ -676,7 +717,7 @@ function renderPanel(){
     const banner=document.createElement("div");
     banner.className="editbar";
     banner.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-      Edit mode — add, rename/substitute, or remove exercises. Tap the pencil icon to leave.`;
+      Edit mode — add, reorder, rename/substitute, or remove exercises. Tap the pencil icon to leave.`;
     panel.appendChild(banner);
   }
 
@@ -688,7 +729,7 @@ function renderPanel(){
     const gword=g.band?"moves":(g.cardio?"session":"lifts");
     h.innerHTML=`<h2 class="${gacc}">${g.label}</h2><div class="rule"></div><span class="tag">${items.length} ${gword}</span>`;
     panel.appendChild(h);
-    items.forEach(ex=> panel.appendChild(exerciseCard(day,gi,g,ex)));
+    items.forEach((ex,idx)=> panel.appendChild(exerciseCard(day,gi,g,ex,idx,items.length)));
 
     if(editMode && !g.cardio){
       const wrap=document.createElement("div");
