@@ -7,7 +7,7 @@
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0c0d0e">
+<meta name="theme-color" content="#050a0d">
 
 <!-- iOS home-screen support -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -21,30 +21,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0c0d0e; --bg2:#121416; --surface:#17191b; --surface2:#1e2225;
-    --line:#2a2f33; --line2:#363c41;
-    --text:#ecefe9; --muted:#8a918b; --faint:#565d58;
-    --volt:#cdf24a; --volt-dim:#94ad36; --volt-glow:rgba(205,242,74,.18);
-    --cyan:#5ad6e0; --cyan-dim:#3a8f96;
-    --danger:#ff5d4f; --warn:#ffb03a;
+    --bg:#050a0d; --bg2:#081217; --surface:#0b1820; --surface2:#0f1f28;
+    --line:#163542; --line2:#1f4a5c;
+    --text:#dff6fb; --muted:#5f8a96; --faint:#3a5b66;
+    --volt:#5ef0ff; --volt-dim:#1fa7c4; --volt-glow:rgba(94,240,255,.22);
+    --cyan:#ff9d3d; --cyan-dim:#c9701c;
+    --danger:#ff4d6a; --warn:#ffb03a;
     --r:14px;
     --display:'Oswald',sans-serif; --body:'Archivo',sans-serif; --mono:'Space Mono',monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{background:var(--bg);color:var(--text);font-family:var(--body);}
+  html{background:var(--bg);height:100%;}
+  html,body{color:var(--text);font-family:var(--body);}
   body{
     min-height:100vh;
+    min-height:100dvh;
     background-image:
       linear-gradient(var(--line) 1px,transparent 1px),
       linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:46px 46px;background-position:center;background-attachment:fixed;background-color:var(--bg);
+    background-size:46px 46px;
+    background-position:center;
+    background-attachment:fixed;
+    background-color:var(--bg);
+    background-repeat:repeat;
   }
   body::before{
     content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
     background:
-      radial-gradient(circle at 80% -10%,var(--volt-glow),transparent 45%),
-      radial-gradient(circle at 0% 110%,rgba(90,214,224,.07),transparent 40%),
-      linear-gradient(180deg,rgba(12,13,14,.4),rgba(12,13,14,.92));
+      radial-gradient(circle at 80% -8%,var(--volt-glow),transparent 42%),
+      radial-gradient(circle at 4% 108%,rgba(255,157,61,.08),transparent 38%),
+      linear-gradient(180deg,rgba(5,10,13,.35),rgba(5,10,13,.94));
+  }
+  /* faint glow riding the grid lines themselves — the look of light traced
+     through dark circuitry rather than a plain flat graph-paper grid */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;mix-blend-mode:screen;opacity:.55;
+    background-image:
+      linear-gradient(rgba(94,240,255,.05) 1px,transparent 1.5px),
+      linear-gradient(90deg,rgba(94,240,255,.05) 1px,transparent 1.5px);
+    background-size:46px 46px;background-position:center;background-attachment:fixed;
   }
   .app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:18px 14px 120px;padding-top:calc(30px + env(safe-area-inset-top, 0px));}
 
@@ -185,7 +200,7 @@
   .setcheck .box svg{width:12px;height:12px;stroke:#0c0d0e;stroke-width:4;fill:none;opacity:0;transition:.15s;}
   .setcheck:hover{border-color:var(--cyan-dim);}
   .setcheck:active{transform:scale(.95);}
-  .setcheck.on{border-color:var(--cyan-dim);color:var(--cyan);background:rgba(90,214,224,.08);}
+  .setcheck.on{border-color:var(--cyan-dim);color:var(--cyan);background:rgba(255,157,61,.1);}
   .setcheck.on .box{background:var(--cyan);border-color:var(--cyan);}
   .setcheck.on .box svg{opacity:1;}
 
