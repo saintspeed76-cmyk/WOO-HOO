@@ -79,6 +79,11 @@
   .menuitem.danger:hover{background:rgba(255,93,79,.1);}
   .menuitem.danger:hover svg{stroke:var(--danger);}
   .menudivider{height:1px;background:var(--line);margin:5px 4px;}
+  .menuunit{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 8px;}
+  .munlab{font-family:var(--display);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--faint);}
+  .unitswitch{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px;}
+  .unitopt{font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+  .unitopt.active{background:var(--volt);color:#0c0d0e;}
 
   .overall{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:14px;}
   .overall .lab{font-family:var(--display);text-transform:uppercase;letter-spacing:1.5px;font-size:13px;color:var(--muted);white-space:nowrap;}
@@ -120,11 +125,35 @@
   .card.band{border-left-color:var(--cyan-dim);}
   .card.cardio{border-left-color:var(--warn);}
   .card.done{border-left-color:var(--volt);background:linear-gradient(90deg,var(--volt-glow),transparent 60%),var(--surface);}
+  .card{will-change:transform;}
+  .card.drop-anim{animation:dropSettle .52s cubic-bezier(.2,.8,.2,1);}
+  @keyframes dropSettle{
+    0%   { transform: translateY(-14px) scale(1.015); box-shadow: 0 18px 26px -14px rgba(0,0,0,.55); }
+    8%   { transform: translateY(-12px) scale(1.015); }
+    42%  { transform: translateY(0) scale(1); box-shadow: 0 2px 8px -4px rgba(0,0,0,.3); }
+    58%  { transform: translateY(-5px) scale(.997); }
+    74%  { transform: translateY(1px) scale(1.002); }
+    88%  { transform: translateY(-1.5px) scale(.999); }
+    100% { transform: translateY(0) scale(1); box-shadow: none; }
+  }
+  .card.lift-anim{animation:liftOff .28s ease-out;}
+  @keyframes liftOff{
+    0%   { transform: translateY(0) scale(1); }
+    35%  { transform: translateY(-6px) scale(1.008); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .card.drop-anim, .card.lift-anim{animation:none;}
+  }
   .crow{display:flex;align-items:flex-start;gap:12px;}
   .cmain{flex:1;min-width:0;}
   .ename{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:.4px;line-height:1.15;}
   .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center;}
   .badge{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg2);border:1px solid var(--line);color:var(--muted);}
+  .badge.tgtedit{display:inline-flex;align-items:center;gap:5px;cursor:pointer;transition:.15s;}
+  .badge.tgtedit svg{opacity:.7;}
+  .badge.tgtedit:hover{background:var(--volt);color:#0c0d0e;border-color:var(--volt);}
+  .badge.tgtedit:hover svg{opacity:1;}
   .badge.tgt{color:var(--volt);border-color:var(--volt-dim);}
   .badge.tgt.band{color:var(--cyan);border-color:var(--cyan-dim);}
   .badge.tgt.cardio{color:var(--warn);border-color:rgba(255,176,58,.4);}
@@ -146,7 +175,7 @@
   .field input:focus{outline:none;border-color:var(--volt-dim);background:#101315;}
   .sets3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
   .sets2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .avgrow{display:flex;align-items:center;gap:8px;margin-top:2px;padding-left:2px;}
+  .avgrow{display:flex;align-items:center;gap:8px;margin-top:2px;padding-left:2px;flex-wrap:wrap;}
   .avglab{font-family:var(--display);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--faint);}
   .avgval{font-family:var(--mono);font-size:13px;color:var(--volt);background:var(--bg2);border:1px solid var(--volt-dim);border-radius:7px;padding:3px 10px;}
 
@@ -201,6 +230,8 @@
 
   .timerchip{font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--line2);color:var(--volt);padding:4px 9px;border-radius:7px;cursor:pointer;transition:.15s;white-space:nowrap;}
   .timerchip:hover{background:var(--volt);color:#0c0d0e;}
+  .carrychip{color:var(--cyan);border-color:var(--cyan-dim);}
+  .carrychip:hover{background:var(--cyan);color:#0c0d0e;}
 
   .fab{position:fixed;right:16px;bottom:18px;z-index:30;width:58px;height:58px;border-radius:18px;background:var(--volt);border:none;color:#0c0d0e;font-size:24px;cursor:pointer;box-shadow:0 10px 30px -8px var(--volt-glow),0 6px 16px rgba(0,0,0,.5);display:grid;place-items:center;transition:.18s;}
   .fab:active{transform:scale(.92);}
@@ -248,9 +279,19 @@
         <div class="menuwrap">
           <button class="iconbtn" id="menuBtn" title="Menu"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
           <div class="menudrop" id="menuDrop">
+            <button class="menuitem" id="todayBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="2.2" fill="currentColor" stroke="none"/></svg><span>Jump to Today</span></button>
+            <div class="menudivider"></div>
             <button class="menuitem" id="editBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg><span>Edit Workouts</span></button>
             <button class="menuitem" id="chartBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><polyline points="7 14 11 10 14 13 19 7"/></svg><span>Progress Chart</span></button>
             <button class="menuitem" id="exportBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5M5 21h14"/></svg><span>Export CSV</span></button>
+            <div class="menudivider"></div>
+            <div class="menuunit">
+              <span class="munlab">Units</span>
+              <div class="unitswitch" id="unitSwitch">
+                <button class="unitopt active" data-u="lb">lb</button>
+                <button class="unitopt" data-u="kg">kg</button>
+              </div>
+            </div>
             <div class="menudivider"></div>
             <button class="menuitem danger" id="resetBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg><span>Reset Logged Data</span></button>
           </div>
@@ -388,29 +429,31 @@ const PROGRAM = {
 const STORE_KEY = "ironlog-rw-v2";
 const LS_KEY = "ironlog-rw-v2-local";
 let storageMode = "none"; // "claude" | "local" | "memory"
-let state = { view:{ week:1, day:"bisback" }, log:{}, customItems:{}, removedItems:{}, order:{} };
+let state = { view:{ week:1, day:"bisback" }, log:{}, customItems:{}, removedItems:{}, order:{}, unit:"lb", targetOverrides:{} };
 function exKey(dayId, gi, name){ return dayId+"|"+gi+"|"+name; }
 function groupKey(dayId, gi){ return dayId+"|"+gi; }
 
 async function loadState(){
+  let found=false;
   // Prefer Claude's persistent artifact storage when available
   try{
     if(window.storage && typeof window.storage.get === "function"){
       let res=null;
       try{ res = await window.storage.get(STORE_KEY,false); }catch(e){ res=null; }
-      if(res && res.value){ mergeState(JSON.parse(res.value)); }
+      if(res && res.value){ mergeState(JSON.parse(res.value)); found=true; }
       storageMode="claude";
-      return;
+      return found;
     }
   }catch(e){ /* fall through */ }
   // Fall back to the browser's own localStorage (works when the file is opened directly)
   try{
     const raw = window.localStorage.getItem(LS_KEY);
-    if(raw) mergeState(JSON.parse(raw));
+    if(raw){ mergeState(JSON.parse(raw)); found=true; }
     storageMode="local";
   }catch(e){
     storageMode="memory";
   }
+  return found;
 }
 function mergeState(parsed){
   state=Object.assign(state,parsed);
@@ -419,6 +462,8 @@ function mergeState(parsed){
   if(!state.customItems) state.customItems={};
   if(!state.removedItems) state.removedItems={};
   if(!state.order) state.order={};
+  if(!state.targetOverrides) state.targetOverrides={};
+  if(state.unit!=="kg") state.unit="lb";
 }
 let saveTimer=null;
 function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,350); }
@@ -440,6 +485,11 @@ function liveGroupItems(day, gi, group){
   const custom = (state.customItems[gk] || []);
   let items = base.concat(custom);
 
+  // Clone so we never mutate the shared PROGRAM template or stored custom objects directly,
+  // then apply any saved target (sets×reps / duration) override.
+  const tOver = state.targetOverrides[gk] || {};
+  items = items.map(ex => tOver[ex.name] ? Object.assign({}, ex, { target: tOver[ex.name] }) : ex);
+
   const order = state.order[gk];
   if(order && order.length){
     const byName = {}; items.forEach(ex=>{ byName[ex.name]=ex; });
@@ -450,6 +500,15 @@ function liveGroupItems(day, gi, group){
     items = ordered;
   }
   return items;
+}
+function setTarget(day, gi, group, ex, newTarget){
+  newTarget=newTarget.trim();
+  if(!newTarget) return false;
+  const gk=groupKey(day.id,gi);
+  state.targetOverrides[gk] = state.targetOverrides[gk] || {};
+  state.targetOverrides[gk][ex.name] = newTarget;
+  scheduleSave();
+  return true;
 }
 function moveItem(day, gi, group, name, dir){
   const gk=groupKey(day.id,gi);
@@ -490,6 +549,7 @@ function removeItem(day, gi, group, ex){
     if(!state.removedItems[gk].includes(ex.name)) state.removedItems[gk].push(ex.name);
   }
   if(state.order[gk]) state.order[gk]=state.order[gk].filter(n=>n!==ex.name);
+  if(state.targetOverrides[gk]) delete state.targetOverrides[gk][ex.name];
   scheduleSave();
 }
 function renameItem(day, gi, group, ex, newName){
@@ -510,6 +570,11 @@ function renameItem(day, gi, group, ex, newName){
   if(state.order[gk]){
     const i=state.order[gk].indexOf(ex.name);
     if(i>=0) state.order[gk][i]=newName; else state.order[gk].push(newName);
+  }
+  // carry any target override over to the new name too
+  if(state.targetOverrides[gk] && state.targetOverrides[gk][ex.name]){
+    state.targetOverrides[gk][newName]=state.targetOverrides[gk][ex.name];
+    delete state.targetOverrides[gk][ex.name];
   }
   scheduleSave();
   return true;
@@ -536,6 +601,24 @@ function dayTotals(week, day){
 }
 function weekPct(week){ let t=0,d=0; PROGRAM.days.forEach(day=>{const r=dayTotals(week,day);t+=r.total;d+=r.done;}); return t?Math.round(d/t*100):0; }
 function overallPct(){ let t=0,d=0; for(let w=1;w<=PROGRAM.weeks;w++){PROGRAM.days.forEach(day=>{const r=dayTotals(w,day);t+=r.total;d+=r.done;});} return t?Math.round(d/t*100):0; }
+function findNextWorkout(){
+  // First day, in program order, that isn't 100% complete yet.
+  for(let w=1; w<=PROGRAM.weeks; w++){
+    for(const day of PROGRAM.days){
+      const r=dayTotals(w,day);
+      if(r.total>0 && r.done<r.total) return { week:w, day:day.id };
+    }
+  }
+  // Everything complete — land on the final day of the final week.
+  const lastDay=PROGRAM.days[PROGRAM.days.length-1];
+  return { week:PROGRAM.weeks, day:lastDay.id };
+}
+function goToToday(){
+  const t=findNextWorkout();
+  state.view.week=t.week; state.view.day=t.day;
+  scheduleSave(); renderAll();
+  toast("Jumped to next workout");
+}
 
 /* ---------------- HELPERS ---------------- */
 function setCount(target){
@@ -552,14 +635,82 @@ function avgWeightSets(en){
   const vals=[en.w1,en.w2,en.w3].map(v=>(v||"").trim()).filter(Boolean);
   if(!vals.length) return "—";
   const nums=vals.map(v=>{const m=v.match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):null;}).filter(n=>n!==null);
-  if(nums.length){ const a=nums.reduce((x,y)=>x+y,0)/nums.length; return (Math.round(a*10)/10)+" lb"; }
+  if(nums.length){ const a=lbToDisplay(nums.reduce((x,y)=>x+y,0)/nums.length); return (Math.round(a*10)/10)+" "+unit(); }
   return "—";
+}
+function avgWeightFromLiveInputs(card){
+  const inputs=card.querySelectorAll('input[data-f="w1"],input[data-f="w2"],input[data-f="w3"]');
+  const nums=[];
+  inputs.forEach(inp=>{
+    const m=(inp.value||"").match(/-?\d+(\.\d+)?/);
+    if(m) nums.push(parseFloat(m[0]));
+  });
+  if(!nums.length) return "—";
+  const a=nums.reduce((x,y)=>x+y,0)/nums.length;
+  return (Math.round(a*10)/10)+" "+unit();
 }
 
 /* ---------------- RENDER ---------------- */
 const $ = s => document.querySelector(s);
 let editMode = false;
+/* ---------------- HELPERS ---------------- */
+const LB_PER_KG = 2.20462;
+function unit(){ return state.unit==="kg" ? "kg" : "lb"; }
+function lbToDisplay(lb){
+  if(lb==null || isNaN(lb)) return lb;
+  return unit()==="kg" ? lb/LB_PER_KG : lb;
+}
+function displayToLb(val){
+  if(val==null || isNaN(val)) return val;
+  return unit()==="kg" ? val*LB_PER_KG : val;
+}
+// Parse a number out of a raw stored string (assumed to be in lb) and
+// return it formatted for the currently active display unit, rounded sensibly.
+function storedToDisplayStr(raw){
+  raw=(raw||"").trim();
+  if(!raw) return "";
+  const m=raw.match(/-?\d+(\.\d+)?/);
+  if(!m) return raw; // non-numeric notes like "Body" pass through untouched
+  const lbVal=parseFloat(m[0]);
+  const out=lbToDisplay(lbVal);
+  const rounded=Math.round(out*10)/10;
+  return raw.replace(m[0], String(rounded));
+}
+// Parse a raw input string the user typed (in the active display unit) and
+// return it converted back to lb for storage, preserving non-numeric text.
+function displayToStoredStr(raw){
+  raw=(raw||"").trim();
+  if(!raw) return "";
+  const m=raw.match(/-?\d+(\.\d+)?/);
+  if(!m) return raw;
+  const dispVal=parseFloat(m[0]);
+  const lbVal=displayToLb(dispVal);
+  const rounded=Math.round(lbVal*10)/10;
+  return raw.replace(m[0], String(rounded));
+}
+function setUnit(u){
+  state.unit = u;
+  scheduleSave();
+  renderPanel(); renderChart_safe();
+}
+function renderChart_safe(){
+  // only re-render the chart if its modal is currently open/built
+  if($("#chartModal") && $("#chartModal").classList.contains("open")) renderChart();
+}
 function checkSVG(){ return `<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>`; }
+
+/* Weighted drop-and-settle animation, played once when a card transitions
+   into "done" (or a light lift-off when un-checked). Pure CSS keyframes
+   triggered via a short-lived class — cheap on battery, no per-frame JS. */
+function playDropAnim(card, becameDone){
+  const cls = becameDone ? "drop-anim" : "lift-anim";
+  const other = becameDone ? "lift-anim" : "drop-anim";
+  card.classList.remove(cls, other); // reset in case one is mid-animation already
+  void card.offsetWidth; // force reflow so the class re-triggers reliably
+  card.classList.add(cls);
+  card.addEventListener("animationend", ()=> card.classList.remove(cls), { once:true });
+  if(becameDone){ try{ if(navigator.vibrate) navigator.vibrate(18); }catch(e){} }
+}
 
 function renderWeeks(){
   const el=$("#weeks"); el.innerHTML="";
@@ -589,11 +740,14 @@ function exerciseCard(day, gi, group, ex, idx, total){
   const card=document.createElement("div");
   const acc = group.band?" band":(group.cardio?" cardio":"");
 
-  const meta=[`<span class="badge tgt${acc}">${ex.target}</span>`];
+  const targetBadge = editMode
+    ? `<button class="badge tgt${acc} tgtedit" data-act="edittarget" title="Edit sets/reps">${ex.target} <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>`
+    : `<span class="badge tgt${acc}">${ex.target}</span>`;
+  const meta=[targetBadge];
   if(ex.base) meta.push(`<span class="badge base">base · ${ex.base}</span>`);
   const timerBtn = ex.timer ? `<span class="timerchip" data-t="${ex.timer}">⏱ ${ex.timer>=60?(ex.timer/60)+"m":ex.timer+"s"}</span>` : "";
 
-  let inputsHTML="", showCornerCheck=true;
+  let inputsHTML="", showCornerCheck=true, prevVals=["","",""];
 
   if(ex.type==="resistance"){
     // max resistance -> no weight, just per-set completion checks
@@ -624,16 +778,22 @@ function exerciseCard(day, gi, group, ex, idx, total){
         <div class="field full"><label>Notes</label><input type="text" placeholder="optional…" data-f="notes"></div>
       </div>`;
   } else { // weight — three separate per-set inputs + average
+    const prevEn = state.view.week>1 ? getEntry(state.view.week-1, day.id, gi, ex.name) : null;
+    prevVals = prevEn ? [prevEn.w1,prevEn.w2,prevEn.w3].map(v=>(v||"").trim()) : ["","",""]; // raw lb, used for storage on carry-forward
+    const prevDisp = prevVals.map(v=> v ? storedToDisplayStr(v) : "");
+    const hasPrev = prevVals.some(Boolean);
+    const hasCurrent = [en.w1,en.w2,en.w3].some(v=>(v||"").trim());
+    const carryChip = (hasPrev && !hasCurrent) ? `<span class="timerchip carrychip" data-carry="1">↻ Use last week (${prevDisp.filter(Boolean).join("/")})</span>` : "";
     inputsHTML=`
       <div class="inputs single">
-        <div class="field full"><label>Weight per set</label>
+        <div class="field full"><label>Weight per set (${unit()})</label>
           <div class="sets3">
-            <input type="text" inputmode="decimal" placeholder="set 1" data-f="w1">
-            <input type="text" inputmode="decimal" placeholder="set 2" data-f="w2">
-            <input type="text" inputmode="decimal" placeholder="set 3" data-f="w3">
+            <input type="text" inputmode="decimal" placeholder="${prevDisp[0]||"set 1"}" data-f="w1">
+            <input type="text" inputmode="decimal" placeholder="${prevDisp[1]||"set 2"}" data-f="w2">
+            <input type="text" inputmode="decimal" placeholder="${prevDisp[2]||"set 3"}" data-f="w3">
           </div>
         </div>
-        <div class="avgrow"><span class="avglab">Avg Weight</span><span class="avgval" data-avg>—</span></div>
+        <div class="avgrow"><span class="avglab">Avg Weight</span><span class="avgval" data-avg>—</span>${carryChip}</div>
         <div class="field full"><label>Notes</label><input type="text" placeholder="reps, how it felt…" data-f="notes"></div>
       </div>`;
   }
@@ -659,15 +819,36 @@ function exerciseCard(day, gi, group, ex, idx, total){
       <button class="cancel">Cancel</button>
       <button class="go">Save</button>
     </div>
+    <div class="renamerow targetrow" style="display:none;">
+      <input type="text" placeholder="${ex.type==="resistance"?"e.g. 1 min × 3 or 3":ex.type==="cardio"?"e.g. 10 min":"e.g. 3×10"}" value="${ex.target.replace(/"/g,'&quot;')}">
+      <button class="cancel">Cancel</button>
+      <button class="go">Save</button>
+    </div>
     ${editMode?"":inputsHTML}`;
 
   // text inputs
   const avgEl=card.querySelector("[data-avg]");
   function refreshAvg(){ if(avgEl) avgEl.textContent=avgWeightSets(en); }
+  const isWeightField = f => ex.type==="weight" && (f==="w1"||f==="w2"||f==="w3");
   card.querySelectorAll("input[data-f]").forEach(inp=>{
     const f=inp.getAttribute("data-f");
-    inp.value=en[f]||"";
-    inp.addEventListener("input",()=>{ en[f]=inp.value; if(f[0]==="w") refreshAvg(); scheduleSave(); });
+    inp.value = isWeightField(f) ? storedToDisplayStr(en[f]) : (en[f]||"");
+    if(isWeightField(f)){
+      // While typing: keep raw display-unit text live for the running average,
+      // without mutating storage (avoids corrupting multi-digit entry on every keystroke).
+      inp.addEventListener("input",()=>{
+        avgEl && (avgEl.textContent = avgWeightFromLiveInputs(card));
+      });
+      // Only convert + persist once the person finishes editing the field.
+      inp.addEventListener("blur",()=>{
+        en[f]=displayToStoredStr(inp.value);
+        inp.value=storedToDisplayStr(en[f]);
+        refreshAvg();
+        scheduleSave();
+      });
+    } else {
+      inp.addEventListener("input",()=>{ en[f]=inp.value; scheduleSave(); });
+    }
   });
   refreshAvg();
 
@@ -678,9 +859,11 @@ function exerciseCard(day, gi, group, ex, idx, total){
       en.sets=en.sets||[];
       en.sets[i]=!en.sets[i];
       sc.classList.toggle("on",en.sets[i]);
+      const wasDone=en.done;
       const n=setCount(ex.target);
       en.done = en.sets.slice(0,n).length===n && en.sets.slice(0,n).every(Boolean) && n>0;
       card.classList.toggle("done",en.done);
+      if(en.done!==wasDone) playDropAnim(card, en.done);
       scheduleSave(); renderWeeks(); renderDays(); updateOverall();
     });
   });
@@ -690,24 +873,33 @@ function exerciseCard(day, gi, group, ex, idx, total){
   if(chk) chk.addEventListener("click",()=>{
     en.done=!en.done;
     card.classList.toggle("done",en.done);
+    playDropAnim(card, en.done);
     scheduleSave(); renderWeeks(); renderDays(); updateOverall();
   });
 
-  const tc=card.querySelector(".timerchip");
+  const tc=card.querySelector(".timerchip[data-t]");
   if(tc) tc.addEventListener("click",()=>openTimer(parseInt(tc.getAttribute("data-t"),10)));
+
+  const carryBtn=card.querySelector(".carrychip");
+  if(carryBtn) carryBtn.addEventListener("click",()=>{
+    en.w1=prevVals[0]||""; en.w2=prevVals[1]||""; en.w3=prevVals[2]||"";
+    renderPanel();
+    toast("Copied last week's weights");
+  });
 
   // edit-mode controls
   const upBtn=card.querySelector('[data-act="up"]');
   const downBtn=card.querySelector('[data-act="down"]');
   const renameBtn=card.querySelector('[data-act="rename"]');
   const removeBtn=card.querySelector('[data-act="remove"]');
+  const targetBtn=card.querySelector('[data-act="edittarget"]');
   if(upBtn) upBtn.addEventListener("click",()=>{
     moveItem(day,gi,group,ex.name,-1); renderPanel();
   });
   if(downBtn) downBtn.addEventListener("click",()=>{
     moveItem(day,gi,group,ex.name,1); renderPanel();
   });
-  const renameRow=card.querySelector(".renamerow");
+  const renameRow=card.querySelector(".renamerow:not(.targetrow)");
   const renameInput=renameRow.querySelector("input");
   if(renameBtn) renameBtn.addEventListener("click",()=>{
     renameRow.style.display="flex";
@@ -725,6 +917,20 @@ function exerciseCard(day, gi, group, ex, idx, total){
     removeItem(day,gi,group,ex);
     toast("Removed"); renderPanel(); renderWeeks(); renderDays(); updateOverall();
   });
+
+  const targetRow=card.querySelector(".targetrow");
+  const targetInput=targetRow.querySelector("input");
+  if(targetBtn) targetBtn.addEventListener("click",()=>{
+    targetRow.style.display="flex";
+    targetInput.focus(); targetInput.select();
+  });
+  targetRow.querySelector(".cancel").addEventListener("click",()=>{ targetRow.style.display="none"; });
+  targetRow.querySelector(".go").addEventListener("click",()=>{
+    const ok=setTarget(day,gi,group,ex,targetInput.value);
+    if(ok){ toast("Sets/reps updated"); renderPanel(); renderWeeks(); renderDays(); updateOverall(); }
+    else targetRow.style.display="none";
+  });
+  targetInput.addEventListener("keydown",e=>{ if(e.key==="Enter") targetRow.querySelector(".go").click(); });
 
   return card;
 }
@@ -745,7 +951,7 @@ function renderPanel(){
     const banner=document.createElement("div");
     banner.className="editbar";
     banner.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-      Edit mode — add, reorder, rename/substitute, or remove exercises. Tap the pencil icon to leave.`;
+      Edit mode — add, reorder, rename/substitute, remove, or tap the sets/reps badge to edit it. Tap the pencil icon to leave.`;
     panel.appendChild(banner);
   }
 
@@ -873,7 +1079,7 @@ function buildSeries(sel){
       const parts=sel.split("|");
       val=avgNumFor(w, parts[0], parseInt(parts[1],10), parts[2]);
     }
-    pts.push({week:w, val: val==null?null:Math.round(val*10)/10});
+    pts.push({week:w, val: val==null?null:Math.round(lbToDisplay(val)*10)/10});
   }
   return pts;
 }
@@ -938,9 +1144,9 @@ function renderChart(){
   const pctp= first.val? Math.round(diff/first.val*1000)/10 : 0;
   const s=diff>0?"+":"";
   if(have.length===1){
-    statEl.innerHTML=`Week ${first.week}: <b>${first.val} lb</b> · log another week to see the trend`;
+    statEl.innerHTML=`Week ${first.week}: <b>${first.val} ${unit()}</b> · log another week to see the trend`;
   } else {
-    statEl.innerHTML=`W${first.week} <b>${first.val}</b> → W${last.week} <b>${last.val} lb</b> &nbsp;·&nbsp; <span class="${diff>=0?'up':'down'}">${s}${diff} lb (${s}${pctp}%)</span>`;
+    statEl.innerHTML=`W${first.week} <b>${first.val}</b> → W${last.week} <b>${last.val} ${unit()}</b> &nbsp;·&nbsp; <span class="${diff>=0?'up':'down'}">${s}${diff} ${unit()} (${s}${pctp}%)</span>`;
   }
 }
 function openChart(){
@@ -968,7 +1174,8 @@ function loggedSummary(ex,en){
   }
   const sets=[en.w1,en.w2,en.w3].map(v=>(v||"").trim()).filter(Boolean).join(" | ");
   const a=avgWeightSets(en);
-  return sets ? sets+(a!=="—"?"  (avg "+a+")":"") : "";
+  const avgLb = (()=>{ const nums=[en.w1,en.w2,en.w3].map(v=>(v||"").trim()).filter(Boolean).map(v=>{const m=v.match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):null;}).filter(n=>n!==null); return nums.length? Math.round(nums.reduce((x,y)=>x+y,0)/nums.length*10)/10 : null; })();
+  return sets ? sets+" lb"+(avgLb!=null?"  (avg "+avgLb+" lb)":"") : "";
 }
 function exportCSV(){
   const rows=[["Week","Day","Section","Exercise","Target","Logged","Notes","Completed"]];
@@ -1003,7 +1210,11 @@ function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("sh
 
 /* ---------------- INIT ---------------- */
 async function init(){
-  await loadState();
+  const foundSavedState = await loadState();
+  if(!foundSavedState){
+    const t=findNextWorkout(); // brand-new install with no logs yet -> start on Week 1, Day 1 (already the default)
+    state.view.week=t.week; state.view.day=t.day;
+  }
   if(storageMode==="claude"){
     $("#savenote").innerHTML='Progress saves automatically.';
   } else if(storageMode==="local"){
@@ -1017,6 +1228,7 @@ async function init(){
   $("#timerReset").onclick=resetTimer;
   $("#timerClose").onclick=closeTimer;
   $("#timerModal").addEventListener("click",e=>{ if(e.target.id==="timerModal") closeTimer(); });
+  $("#todayBtn").onclick=()=>{ goToToday(); closeMenu(); };
   $("#exportBtn").onclick=()=>{ exportCSV(); closeMenu(); };
   $("#resetBtn").onclick=()=>{ resetAll(); closeMenu(); };
   $("#chartBtn").onclick=()=>{ openChart(); closeMenu(); };
@@ -1033,6 +1245,17 @@ async function init(){
   document.addEventListener("click",(e)=>{
     if(!e.target.closest(".menuwrap")) closeMenu();
   });
+  document.querySelectorAll(".unitopt").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      const u=btn.getAttribute("data-u");
+      if(u===state.unit) return;
+      setUnit(u);
+      document.querySelectorAll(".unitopt").forEach(b=>b.classList.toggle("active", b.getAttribute("data-u")===u));
+    });
+  });
+  // reflect the loaded unit preference in the switch UI
+  document.querySelectorAll(".unitopt").forEach(b=>b.classList.toggle("active", b.getAttribute("data-u")===unit()));
   renderPresets(); paintClock();
 }
 function toggleMenu(){ $("#menuDrop").classList.toggle("open"); }
